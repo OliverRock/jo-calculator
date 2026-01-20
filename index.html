@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>London Value Calculator</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .slider-container { display: flex; align-items: center; gap: 10px; }
+        
+        .results-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .scenario {
+            width: 48%;
+            text-align: center;
+            padding: 15px 5px;
+            border-radius: 8px;
+        }
+        .scenario-a { background: #fff5f5; border: 1px solid #fed7d7; } /* Red tint */
+        .scenario-b { background: #f0fff4; border: 1px solid #c6f6d5; } /* Green tint */
+        
+        .price-tag {
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: block;
+            margin: 10px 0;
+        }
+        .sc-label { font-size: 0.85rem; color: #666; }
+        .win-box {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .win-amount { font-size: 1.5rem; font-weight: bold; color: #4ade80; }
+        
+        .note { font-size: 0.8rem; color: #777; margin-top: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>London Property Budget Tool</h2>
+    
+    <div class="input-group">
+        <label>Monthly "Pain Threshold" (£)</label>
+        <input type="number" id="monthlyBudget" value="650" oninput="calculate()">
+        <small style="color:#666">Max you want to spend on Housing (Mortgage + Service Charge)</small>
+    </div>
+
+    <div class="input-group">
+        <label>Cash Deposit (£)</label>
+        <input type="number" id="deposit" value="400000" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label>Service Charge to Avoid (£ per month)</label>
+        <input type="number" id="serviceCharge" value="300" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label>Interest Rate (%)</label>
+        <div class="slider-container">
+            <input type="number" id="rate" value="4.5" step="0.1" oninput="calculate()">
+        </div>
+    </div>
+    
+    <div class="results-box">
+        <div class="comparison">
+            <div class="scenario scenario-a">
+                <div class="sc-label">Flat with Fees</div>
+                <div style="font-size: 0.9rem; color: var(--danger); font-weight:bold;">Paying £<span id="dispSc">300</span>/mo Fees</div>
+                <span class="price-tag" id="priceA">£465,000</span>
+                <div class="sc-label">Mortgage Power: £<span id="mortA">65,000</span></div>
+            </div>
+
+            <div class="scenario scenario-b">
+                <div class="sc-label">Freehold / Warner</div>
+                <div style="font-size: 0.9rem; color: var(--accent); font-weight:bold;">Paying £0 Fees</div>
+                <span class="price-tag" id="priceB">£520,000</span>
+                <div class="sc-label">Mortgage Power: £<span id="mortB">120,000</span></div>
+            </div>
+        </div>
+
+        <div class="win-box">
+            <div>Avoiding the service charge buys you:</div>
+            <div class="win-amount">+£<span id="diffValue">55,000</span></div>
+            <div>more property value for the same monthly cost.</div>
+        </div>
+    </div>
+
+    <div class="note">
+        *Assumes a 25-year mortgage term. Does not include council tax or utilities.
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // Inputs
+        const budget = parseFloat(document.getElementById('monthlyBudget').value) || 0;
+        const deposit = parseFloat(document.getElementById('deposit').value) || 0;
+        const sc = parseFloat(document.getElementById('serviceCharge').value) || 0;
+        const ratePercent = parseFloat(document.getElementById('rate').value) || 4.5;
+        
+        // Constants
+        const years = 25;
+        const months = years * 12;
+        const r = (ratePercent / 100) / 12; // Monthly interest rate
+
+        // --- Scenario A (With Service Charge) ---
+        let availableForMortgageA = budget - sc;
+        let principalA = 0;
+        
+        if (availableForMortgageA > 0) {
+            // Mortgage Formula: P = M * ((1+r)^n - 1) / (r * (1+r)^n)
+            principalA = availableForMortgageA * ( (Math.pow(1+r, months) - 1) / (r * Math.pow(1+r, months)) );
+        }
+        const totalPriceA = deposit + principalA;
+
+        // --- Scenario B (Zero Service Charge) ---
+        let availableForMortgageB = budget; // Full budget goes to mortgage
+        let principalB = 0;
+
+        if (availableForMortgageB > 0) {
+            principalB = availableForMortgageB * ( (Math.pow(1+r, months) - 1) / (r * Math.pow(1+r, months)) );
+        }
+        const totalPriceB = deposit + principalB;
+
+        // --- Difference ---
+        const diff = totalPriceB - totalPriceA;
+
+        // --- Update UI ---
+        document.getElementById('priceA').innerText = formatCurrency(totalPriceA);
+        document.getElementById('mortA').innerText = formatCurrency(principalA);
+        
+        document.getElementById('priceB').innerText = formatCurrency(totalPriceB);
+        document.getElementById('mortB').innerText = formatCurrency(principalB);
+        
+        document.getElementById('diffValue').innerText = formatNumber(diff);
+        document.getElementById('dispSc').innerText = sc;
+    }
+
+    function formatCurrency(num) {
+        return "£" + Math.floor(num).toLocaleString('en-GB');
+    }
+    
+    function formatNumber(num) {
+        return Math.floor(num).toLocaleString('en-GB');
+    }
+
+    // Run on load
+    calculate();
+</script>
+
+</body>
+</html>
