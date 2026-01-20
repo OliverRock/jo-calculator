@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Affordability Calculator</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --accent-light: #d4edda;
+            --warning: #f39c12;
+            --warning-light: #fff3cd;
+            --danger: #e74c3c;
+            --danger-light: #f8d7da;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #e0e0e0;
+            --text: #333;
+            --text-muted: #666;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        header p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg);
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .input-group {
+            margin-bottom: 0;
+        }
+        
+        .input-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+        
+        .hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+        
+        /* Affordability Indicator */
+        .affordability-bar {
+            height: 8px;
+            background: linear-gradient(to right, var(--accent) 0%, var(--accent) 30%, var(--warning) 30%, var(--warning) 40%, var(--danger) 40%, var(--danger) 100%);
+            border-radius: 4px;
+            margin: 15px 0 10px;
+            position: relative;
+        }
+        
+        .affordability-marker {
+            position: absolute;
+            top: -6px;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border: 3px solid white;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: left 0.3s ease;
+        }
+        
+        .affordability-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        /* Status Boxes */
+        .status-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .status-box.success {
+            background: var(--accent-light);
+            border: 1px solid var(--accent);
+        }
+        
+        .status-box.warning {
+            background: var(--warning-light);
+            border: 1px solid var(--warning);
+        }
+        
+        .status-box.danger {
+            background: var(--danger-light);
+            border: 1px solid var(--danger);
+        }
+        
+        .status-box .status-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .status-box.success .status-title { color: #155724; }
+        .status-box.warning .status-title { color: #856404; }
+        .status-box.danger .status-title { color: #721c24; }
+        
+        /* Budget Breakdown */
+        .budget-breakdown {
+            margin-top: 20px;
+        }
+        
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--bg);
+        }
+        
+        .budget-item:last-child {
+            border-bottom: none;
+        }
+        
+        .budget-item-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .budget-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .budget-item-value {
+            font-weight: 600;
+        }
+        
+        .budget-total {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+        
+        .budget-total.over-budget {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+        
+        /* Visual Bar Chart */
+        .budget-visual {
+            height: 40px;
+            display: flex;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .budget-visual-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: width 0.3s ease;
+            min-width: 0;
+            overflow: hidden;
+        }
+        
+        /* Comparison Section */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .scenario-card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .scenario-card.with-fees {
+            background: #fff5f5;
+            border: 2px solid #fed7d7;
+        }
+        
+        .scenario-card.no-fees {
+            background: #f0fff4;
+            border: 2px solid #c6f6d5;
+        }
+        
+        .scenario-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        
+        .scenario-highlight {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .scenario-card.with-fees .scenario-highlight { color: var(--danger); }
+        .scenario-card.no-fees .scenario-highlight { color: var(--accent); }
+        
+        .scenario-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        .scenario-detail {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .comparison-result {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .comparison-result .amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4ade80;
+            margin: 10px 0;
+        }
+        
+        /* Upfront Costs */
+        .costs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .costs-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .cost-item {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .cost-item-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        
+        .cost-item-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .total-upfront {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .total-upfront .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .total-upfront .amount {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+        
+        /* Lending Check */
+        .lending-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .lending-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .lending-stat {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .lending-stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        
+        .lending-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .lending-stat-note {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        
+        /* Money Left Over */
+        .money-left {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .money-left.positive {
+            background: var(--accent-light);
+            border: 2px solid var(--accent);
+        }
+        
+        .money-left.negative {
+            background: var(--danger-light);
+            border: 2px solid var(--danger);
+        }
+        
+        .money-left-label {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .money-left.positive .money-left-label { color: #155724; }
+        .money-left.negative .money-left-label { color: #721c24; }
+        
+        .money-left-amount {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .money-left.positive .money-left-amount { color: var(--accent); }
+        .money-left.negative .money-left-amount { color: var(--danger); }
+        
+        /* Footer Note */
+        .footer-note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 30px;
+            padding: 20px;
+        }
+        
+        /* Back Link */
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-link">&larr; Back to simple calculator</a>
+    
+    <header>
+        <h1>Home Affordability Calculator</h1>
+        <p>Full breakdown for self-employed buyers</p>
+    </header>
+
+    <!-- SECTION 1: Income -->
+    <div class="card">
+        <h2 class="card-title">Your Income</h2>
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="monthlyIncome">Expected Monthly Income (after tax)</label>
+                <input type="number" id="monthlyIncome" value="4000" oninput="calculate()">
+                <div class="hint">Your average monthly take-home as self-employed</div>
+            </div>
+            <div class="input-group">
+                <label for="annualIncome">Annual Income (for mortgage calc)</label>
+                <input type="number" id="annualIncome" value="55000" oninput="calculate()">
+                <div class="hint">Average of last 2-3 years (before tax)</div>
+            </div>
+        </div>
+        
+        <!-- Lending Reality -->
+        <div class="lending-grid">
+            <div class="lending-stat">
+                <div class="lending-stat-label">Max Mortgage (Self-Employed)</div>
+                <div class="lending-stat-value" id="maxMortgage">£220,000</div>
+                <div class="lending-stat-note">Based on 4x annual income</div>
+            </div>
+            <div class="lending-stat">
+                <div class="lending-stat-label">Max Property Price</div>
+                <div class="lending-stat-value" id="maxPropertyPrice">£620,000</div>
+                <div class="lending-stat-note">With your deposit</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 2: Monthly Budget -->
+    <div class="card">
+        <h2 class="card-title">Maximum Monthly Housing Budget</h2>
+        <div class="input-grid">
+            <div class="input-group full-width">
+                <label for="maxBudget">Maximum you want to spend per month</label>
+                <input type="number" id="maxBudget" value="1500" oninput="calculate()">
+                <div class="hint">Total for mortgage + service charge + council tax + utilities</div>
+            </div>
+        </div>
+        
+        <!-- Affordability Indicator -->
+        <div style="margin-top: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span style="font-weight: 600;">Housing as % of Income</span>
+                <span id="affordabilityPercent" style="font-size: 1.2rem; font-weight: 700;">37.5%</span>
+            </div>
+            <div class="affordability-bar">
+                <div class="affordability-marker" id="affordabilityMarker"></div>
+            </div>
+            <div class="affordability-labels">
+                <span>0%</span>
+                <span>30% (comfortable)</span>
+                <span>40% (stretched)</span>
+                <span>50%+</span>
+            </div>
+        </div>
+        
+        <div class="status-box" id="affordabilityStatus">
+            <div class="status-title">Comfortable</div>
+            <div>You're within the recommended range. Lenders will view this favourably.</div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: Monthly Costs Breakdown -->
+    <div class="card">
+        <h2 class="card-title">Monthly Costs Breakdown</h2>
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="serviceCharge">Service Charge (monthly)</label>
+                <input type="number" id="serviceCharge" value="300" oninput="calculate()">
+                <div class="hint">£0 for freehold properties</div>
+            </div>
+            <div class="input-group">
+                <label for="councilTax">Council Tax (monthly)</label>
+                <input type="number" id="councilTax" value="150" oninput="calculate()">
+                <div class="hint">Band D in most London boroughs: £140-180</div>
+            </div>
+            <div class="input-group">
+                <label for="utilities">Utilities (monthly)</label>
+                <input type="number" id="utilities" value="200" oninput="calculate()">
+                <div class="hint">Gas, electric, water, broadband</div>
+            </div>
+            <div class="input-group">
+                <label for="interestRate">Interest Rate (%)</label>
+                <input type="number" id="interestRate" value="4.5" step="0.1" oninput="calculate()">
+                <div class="hint">Current mortgage rate</div>
+            </div>
+        </div>
+        
+        <!-- Visual Budget Bar -->
+        <div class="budget-visual" id="budgetVisual">
+            <div class="budget-visual-segment" style="background: #3498db;" id="vizMortgage">Mortgage</div>
+            <div class="budget-visual-segment" style="background: #e74c3c;" id="vizService">Service</div>
+            <div class="budget-visual-segment" style="background: #9b59b6;" id="vizCouncil">Council</div>
+            <div class="budget-visual-segment" style="background: #f39c12;" id="vizUtilities">Utilities</div>
+        </div>
+        
+        <!-- Budget Breakdown List -->
+        <div class="budget-breakdown">
+            <div class="budget-item">
+                <div class="budget-item-label">
+                    <span class="budget-dot" style="background: #3498db;"></span>
+                    <span>Mortgage Payment</span>
+                </div>
+                <div class="budget-item-value" id="mortgagePayment">£850</div>
+            </div>
+            <div class="budget-item">
+                <div class="budget-item-label">
+                    <span class="budget-dot" style="background: #e74c3c;"></span>
+                    <span>Service Charge</span>
+                </div>
+                <div class="budget-item-value" id="serviceChargeDisplay">£300</div>
+            </div>
+            <div class="budget-item">
+                <div class="budget-item-label">
+                    <span class="budget-dot" style="background: #9b59b6;"></span>
+                    <span>Council Tax</span>
+                </div>
+                <div class="budget-item-value" id="councilTaxDisplay">£150</div>
+            </div>
+            <div class="budget-item">
+                <div class="budget-item-label">
+                    <span class="budget-dot" style="background: #f39c12;"></span>
+                    <span>Utilities</span>
+                </div>
+                <div class="budget-item-value" id="utilitiesDisplay">£200</div>
+            </div>
+        </div>
+        
+        <div class="budget-total" id="budgetTotal">
+            <span>Total Monthly Housing Cost</span>
+            <span id="totalMonthlyCost">£1,500</span>
+        </div>
+        
+        <!-- Money Left Over -->
+        <div class="money-left positive" id="moneyLeftBox">
+            <div class="money-left-label">Money left after housing costs</div>
+            <div class="money-left-amount" id="moneyLeft">£2,500</div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: Property & Deposit -->
+    <div class="card">
+        <h2 class="card-title">Your Deposit</h2>
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="deposit">Cash Deposit</label>
+                <input type="number" id="deposit" value="400000" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label for="mortgageTerm">Mortgage Term (years)</label>
+                <input type="number" id="mortgageTerm" value="25" oninput="calculate()">
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 5: Property Comparison -->
+    <div class="card">
+        <h2 class="card-title">What Can You Afford?</h2>
+        
+        <div class="comparison-grid">
+            <div class="scenario-card with-fees">
+                <div class="scenario-label">Flat with Service Charge</div>
+                <div class="scenario-highlight">Paying £<span id="scAmount">300</span>/mo in fees</div>
+                <div class="scenario-price" id="priceWithFees">£525,000</div>
+                <div class="scenario-detail">Mortgage: £<span id="mortgageWithFees">125,000</span></div>
+            </div>
+            <div class="scenario-card no-fees">
+                <div class="scenario-label">Freehold / No Service Charge</div>
+                <div class="scenario-highlight">£0 in fees</div>
+                <div class="scenario-price" id="priceNoFees">£580,000</div>
+                <div class="scenario-detail">Mortgage: £<span id="mortgageNoFees">180,000</span></div>
+            </div>
+        </div>
+        
+        <div class="comparison-result">
+            <div>Avoiding service charges lets you afford</div>
+            <div class="amount">+£<span id="priceDifference">55,000</span></div>
+            <div>more property for the same monthly cost</div>
+        </div>
+    </div>
+
+    <!-- SECTION 6: Upfront Costs -->
+    <div class="card">
+        <h2 class="card-title">Upfront Costs (No Service Charge Scenario)</h2>
+        
+        <div class="costs-grid">
+            <div class="cost-item">
+                <div class="cost-item-label">Stamp Duty</div>
+                <div class="cost-item-value" id="stampDuty">£9,000</div>
+            </div>
+            <div class="cost-item">
+                <div class="cost-item-label">Legal Fees (est.)</div>
+                <div class="cost-item-value">£2,000</div>
+            </div>
+            <div class="cost-item">
+                <div class="cost-item-label">Survey (est.)</div>
+                <div class="cost-item-value">£500</div>
+            </div>
+        </div>
+        
+        <div class="total-upfront">
+            <div class="label">Total Cash Needed to Move</div>
+            <div class="amount" id="totalUpfront">£411,500</div>
+        </div>
+        <div class="hint" style="text-align: center; margin-top: 10px;">Deposit + Stamp Duty + Legal + Survey</div>
+    </div>
+
+    <!-- SECTION 7: Lending Check -->
+    <div class="card">
+        <h2 class="card-title">Lending Reality Check</h2>
+        
+        <div class="status-box" id="lendingStatus">
+            <div class="status-title">Checking...</div>
+            <div id="lendingMessage">Calculating based on your income...</div>
+        </div>
+        
+        <div class="lending-grid" style="margin-top: 20px;">
+            <div class="lending-stat">
+                <div class="lending-stat-label">Mortgage Needed (No Fees)</div>
+                <div class="lending-stat-value" id="mortgageNeeded">£180,000</div>
+            </div>
+            <div class="lending-stat">
+                <div class="lending-stat-label">Your Max Mortgage</div>
+                <div class="lending-stat-value" id="yourMaxMortgage">£220,000</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        <p><strong>Note:</strong> This calculator provides estimates only. Self-employed mortgage applications typically require 2-3 years of accounts. Actual lending decisions depend on many factors including credit history, existing debts, and lender criteria.</p>
+        <p>Stamp duty calculated for additional property rates. First-time buyer relief may apply.</p>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // Get all inputs
+        const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value) || 0;
+        const annualIncome = parseFloat(document.getElementById('annualIncome').value) || 0;
+        const maxBudget = parseFloat(document.getElementById('maxBudget').value) || 0;
+        const serviceCharge = parseFloat(document.getElementById('serviceCharge').value) || 0;
+        const councilTax = parseFloat(document.getElementById('councilTax').value) || 0;
+        const utilities = parseFloat(document.getElementById('utilities').value) || 0;
+        const deposit = parseFloat(document.getElementById('deposit').value) || 0;
+        const interestRate = parseFloat(document.getElementById('interestRate').value) || 4.5;
+        const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
+
+        // Constants
+        const months = mortgageTerm * 12;
+        const monthlyRate = (interestRate / 100) / 12;
+
+        // === LENDING CALCULATIONS ===
+        const maxMortgage = annualIncome * 4;
+        const maxPropertyPrice = maxMortgage + deposit;
+        
+        document.getElementById('maxMortgage').textContent = formatCurrency(maxMortgage);
+        document.getElementById('maxPropertyPrice').textContent = formatCurrency(maxPropertyPrice);
+
+        // === AFFORDABILITY CALCULATIONS ===
+        const affordabilityPercent = monthlyIncome > 0 ? (maxBudget / monthlyIncome) * 100 : 0;
+        document.getElementById('affordabilityPercent').textContent = affordabilityPercent.toFixed(1) + '%';
+        
+        // Position the marker (0-50% maps to 0-100% width)
+        const markerPosition = Math.min(Math.max(affordabilityPercent * 2, 0), 100);
+        document.getElementById('affordabilityMarker').style.left = markerPosition + '%';
+        
+        // Update affordability status
+        const statusBox = document.getElementById('affordabilityStatus');
+        if (affordabilityPercent <= 30) {
+            statusBox.className = 'status-box success';
+            statusBox.innerHTML = '<div class="status-title">Comfortable</div><div>You\'re within the recommended range. Lenders will view this favourably.</div>';
+        } else if (affordabilityPercent <= 40) {
+            statusBox.className = 'status-box warning';
+            statusBox.innerHTML = '<div class="status-title">Stretched</div><div>This is manageable but leaves less room for savings or unexpected costs.</div>';
+        } else {
+            statusBox.className = 'status-box danger';
+            statusBox.innerHTML = '<div class="status-title">High Risk</div><div>Spending over 40% on housing may be difficult to sustain. Consider reducing your budget.</div>';
+        }
+
+        // === MORTGAGE CALCULATION (with service charge) ===
+        const fixedCosts = serviceCharge + councilTax + utilities;
+        const availableForMortgage = Math.max(maxBudget - fixedCosts, 0);
+        
+        let mortgagePrincipalWithFees = 0;
+        if (availableForMortgage > 0 && monthlyRate > 0) {
+            mortgagePrincipalWithFees = availableForMortgage * ((Math.pow(1 + monthlyRate, months) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, months)));
+        }
+        const propertyPriceWithFees = deposit + mortgagePrincipalWithFees;
+
+        // === MORTGAGE CALCULATION (no service charge) ===
+        const fixedCostsNoService = councilTax + utilities;
+        const availableForMortgageNoService = Math.max(maxBudget - fixedCostsNoService, 0);
+        
+        let mortgagePrincipalNoFees = 0;
+        if (availableForMortgageNoService > 0 && monthlyRate > 0) {
+            mortgagePrincipalNoFees = availableForMortgageNoService * ((Math.pow(1 + monthlyRate, months) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, months)));
+        }
+        const propertyPriceNoFees = deposit + mortgagePrincipalNoFees;
+
+        // === BUDGET BREAKDOWN ===
+        const mortgagePayment = availableForMortgage;
+        const totalMonthlyCost = mortgagePayment + serviceCharge + councilTax + utilities;
+        
+        document.getElementById('mortgagePayment').textContent = formatCurrency(mortgagePayment);
+        document.getElementById('serviceChargeDisplay').textContent = formatCurrency(serviceCharge);
+        document.getElementById('councilTaxDisplay').textContent = formatCurrency(councilTax);
+        document.getElementById('utilitiesDisplay').textContent = formatCurrency(utilities);
+        document.getElementById('totalMonthlyCost').textContent = formatCurrency(totalMonthlyCost);
+        
+        // Budget total styling
+        const budgetTotalEl = document.getElementById('budgetTotal');
+        if (totalMonthlyCost > maxBudget) {
+            budgetTotalEl.className = 'budget-total over-budget';
+        } else {
+            budgetTotalEl.className = 'budget-total';
+        }
+
+        // Visual budget bar
+        const total = mortgagePayment + serviceCharge + councilTax + utilities;
+        if (total > 0) {
+            document.getElementById('vizMortgage').style.width = (mortgagePayment / total * 100) + '%';
+            document.getElementById('vizService').style.width = (serviceCharge / total * 100) + '%';
+            document.getElementById('vizCouncil').style.width = (councilTax / total * 100) + '%';
+            document.getElementById('vizUtilities').style.width = (utilities / total * 100) + '%';
+        }
+
+        // Money left over
+        const moneyLeft = monthlyIncome - totalMonthlyCost;
+        const moneyLeftBox = document.getElementById('moneyLeftBox');
+        document.getElementById('moneyLeft').textContent = formatCurrency(moneyLeft);
+        
+        if (moneyLeft >= 0) {
+            moneyLeftBox.className = 'money-left positive';
+        } else {
+            moneyLeftBox.className = 'money-left negative';
+        }
+
+        // === COMPARISON ===
+        document.getElementById('scAmount').textContent = serviceCharge.toLocaleString('en-GB');
+        document.getElementById('priceWithFees').textContent = formatCurrency(propertyPriceWithFees);
+        document.getElementById('mortgageWithFees').textContent = formatNumber(mortgagePrincipalWithFees);
+        document.getElementById('priceNoFees').textContent = formatCurrency(propertyPriceNoFees);
+        document.getElementById('mortgageNoFees').textContent = formatNumber(mortgagePrincipalNoFees);
+        
+        const priceDiff = propertyPriceNoFees - propertyPriceWithFees;
+        document.getElementById('priceDifference').textContent = formatNumber(priceDiff);
+
+        // === STAMP DUTY (additional property rates) ===
+        const stampDuty = calculateStampDuty(propertyPriceNoFees);
+        document.getElementById('stampDuty').textContent = formatCurrency(stampDuty);
+        
+        const totalUpfront = deposit + stampDuty + 2000 + 500;
+        document.getElementById('totalUpfront').textContent = formatCurrency(totalUpfront);
+
+        // === LENDING CHECK ===
+        document.getElementById('mortgageNeeded').textContent = formatCurrency(mortgagePrincipalNoFees);
+        document.getElementById('yourMaxMortgage').textContent = formatCurrency(maxMortgage);
+        
+        const lendingStatus = document.getElementById('lendingStatus');
+        const lendingMessage = document.getElementById('lendingMessage');
+        
+        if (mortgagePrincipalNoFees <= maxMortgage) {
+            lendingStatus.className = 'status-box success';
+            lendingStatus.querySelector('.status-title').textContent = 'Looks Achievable';
+            lendingMessage.textContent = `The mortgage you need (${formatCurrency(mortgagePrincipalNoFees)}) is within your likely lending limit of ${formatCurrency(maxMortgage)}.`;
+        } else {
+            const shortfall = mortgagePrincipalNoFees - maxMortgage;
+            lendingStatus.className = 'status-box danger';
+            lendingStatus.querySelector('.status-title').textContent = 'May Be Difficult';
+            lendingMessage.textContent = `You need ${formatCurrency(mortgagePrincipalNoFees)} but may only qualify for ${formatCurrency(maxMortgage)}. Consider reducing your budget or increasing your deposit by ${formatCurrency(shortfall)}.`;
+        }
+    }
+
+    function calculateStampDuty(price) {
+        // Standard residential rates (not first-time buyer)
+        // Up to £250,000: 0%
+        // £250,001 to £925,000: 5%
+        // £925,001 to £1.5m: 10%
+        // Over £1.5m: 12%
+        
+        let duty = 0;
+        
+        if (price > 1500000) {
+            duty += (price - 1500000) * 0.12;
+            price = 1500000;
+        }
+        if (price > 925000) {
+            duty += (price - 925000) * 0.10;
+            price = 925000;
+        }
+        if (price > 250000) {
+            duty += (price - 250000) * 0.05;
+        }
+        
+        return Math.floor(duty);
+    }
+
+    function formatCurrency(num) {
+        return '£' + Math.floor(num).toLocaleString('en-GB');
+    }
+
+    function formatNumber(num) {
+        return Math.floor(num).toLocaleString('en-GB');
+    }
+
+    // Initial calculation
+    calculate();
+</script>
+
+</body>
+</html>
