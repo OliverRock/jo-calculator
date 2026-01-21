@@ -4,121 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Affordability Calculator</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --accent-light: #d4edda;
-            --warning: #f39c12;
-            --warning-light: #fff3cd;
-            --danger: #e74c3c;
-            --danger-light: #f8d7da;
-            --bg: #f4f7f6;
-            --card-bg: #ffffff;
-            --border: #e0e0e0;
-            --text: #333;
-            --text-muted: #666;
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            line-height: 1.5;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        header h1 {
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-        
-        header p {
-            color: var(--text-muted);
-            margin: 0;
-        }
-        
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin: 0 0 20px 0;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--bg);
-        }
-        
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        @media (max-width: 600px) {
-            .input-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .input-group {
-            margin-bottom: 0;
-        }
-        
-        .input-group.full-width {
-            grid-column: 1 / -1;
-        }
-        
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-            color: var(--text);
-        }
-        
-        .hint {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-        
-        input[type="number"], select {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: #fff;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        
-        input[type="number"]:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
-        }
+        /* Page-specific styles for Full Calculator */
         
         /* Tooltip */
         .tooltip {
@@ -184,37 +72,6 @@
                 left: 20px;
             }
         }
-        
-        /* Status Boxes */
-        .status-box {
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .status-box.success {
-            background: var(--accent-light);
-            border: 1px solid var(--accent);
-        }
-        
-        .status-box.warning {
-            background: var(--warning-light);
-            border: 1px solid var(--warning);
-        }
-        
-        .status-box.danger {
-            background: var(--danger-light);
-            border: 1px solid var(--danger);
-        }
-        
-        .status-box .status-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .status-box.success .status-title { color: #155724; }
-        .status-box.warning .status-title { color: #856404; }
-        .status-box.danger .status-title { color: #721c24; }
         
         /* Budget Breakdown */
         .budget-breakdown {
@@ -505,35 +362,20 @@
         
         .money-left.positive .money-left-amount { color: var(--accent); }
         .money-left.negative .money-left-amount { color: var(--danger); }
-        
-        /* Footer Note */
-        .footer-note {
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 30px;
-            padding: 20px;
-        }
-        
-        /* Back Link */
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        
-        .back-link:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
 
+<nav class="main-nav">
+    <div class="nav-container">
+        <a href="index.html" class="nav-link">Simple Calculator</a>
+        <a href="full-calculator.html" class="nav-link active">Full Calculator</a>
+        <a href="commute.html" class="nav-link">Commute Maps</a>
+    </div>
+</nav>
+
+<div class="page-content">
 <div class="container">
-    <a href="index.html" class="back-link">&larr; Back to simple calculator</a>
-    
     <header>
         <h1>Home Affordability Calculator</h1>
         <p>Full breakdown for self-employed buyers</p>
@@ -780,6 +622,7 @@
         <p><strong>Note:</strong> This calculator provides estimates only. Self-employed mortgage applications typically require 2-3 years of accounts. Actual lending decisions depend on many factors including credit history, existing debts, and lender criteria.</p>
         <p>Stamp duty rates from April 2025. First-time buyer relief available on properties up to £500,000.</p>
     </div>
+</div>
 </div>
 
 <script>

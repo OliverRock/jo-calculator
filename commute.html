@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commute Distance Maps</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Page-specific styles for Commute Maps */
+        .container {
+            max-width: 900px;
+        }
+        
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 0;
+            background: var(--card-bg);
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 18px 20px;
+            background: #e8eaed;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .tab:hover {
+            background: #dde0e4;
+        }
+        
+        .tab.active {
+            background: var(--card-bg);
+            color: var(--primary);
+        }
+        
+        .tab-icon {
+            font-size: 1.3rem;
+        }
+        
+        /* Map Container */
+        .map-container {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .map-panel {
+            display: none;
+        }
+        
+        .map-panel.active {
+            display: block;
+        }
+        
+        .map-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+        
+        .map-info-icon {
+            font-size: 2rem;
+        }
+        
+        .map-info-text h3 {
+            margin: 0 0 5px 0;
+            color: var(--primary);
+        }
+        
+        .map-info-text p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .map-image {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        /* Legend */
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+        
+        .legend h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: rgba(100, 120, 200, 0.4);
+            border: 2px solid rgb(70, 90, 180);
+        }
+        
+        @media (max-width: 600px) {
+            .tabs {
+                flex-direction: column;
+                border-radius: 12px;
+            }
+            
+            .tab:first-child {
+                border-radius: 12px 12px 0 0;
+            }
+            
+            .map-container {
+                border-radius: 0 0 12px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="main-nav">
+    <div class="nav-container">
+        <a href="index.html" class="nav-link">Simple Calculator</a>
+        <a href="full-calculator.html" class="nav-link">Full Calculator</a>
+        <a href="commute.html" class="nav-link active">Commute Maps</a>
+    </div>
+</nav>
+
+<div class="page-content">
+<div class="container">
+    <header>
+        <h1>Commute Distance Maps</h1>
+        <p>How far can you travel from the office?</p>
+    </header>
+    
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('walk')" id="tab-walk">
+            <span class="tab-icon">🚶</span>
+            <span>30 min Walk</span>
+        </button>
+        <button class="tab" onclick="showTab('bike')" id="tab-bike">
+            <span class="tab-icon">🚴</span>
+            <span>20 min Bike</span>
+        </button>
+        <button class="tab" onclick="showTab('transit')" id="tab-transit">
+            <span class="tab-icon">🚇</span>
+            <span>20 min Transit</span>
+        </button>
+    </div>
+    
+    <!-- Map Container -->
+    <div class="map-container">
+        <!-- Walk Panel -->
+        <div class="map-panel active" id="panel-walk">
+            <div class="map-info">
+                <div class="map-info-icon">🚶</div>
+                <div class="map-info-text">
+                    <h3>30 Minute Walk</h3>
+                    <p>Areas reachable on foot within 30 minutes.<p>
+                </div>
+            </div>
+            <img src="images/Screenshot 2026-01-21 at 15.59.05.png" alt="30 minute walking distance" class="map-image">
+            <div class="legend">
+                <h4>Areas Covered</h4>
+                <p style="margin: 0; font-size: 0.9rem;">Islington, Hoxton, Shoreditch, Finsbury, parts of City of London, Clerkenwell</p>
+            </div>
+        </div>
+        
+        <!-- Bike Panel -->
+        <div class="map-panel" id="panel-bike">
+            <div class="map-info">
+                <div class="map-info-icon">🚴</div>
+                <div class="map-info-text">
+                    <h3>20 Minute Bike Ride</h3>
+                    <p>Cycling opens up a much larger area.</p>
+                </div>
+            </div>
+            <img src="images/Screenshot 2026-01-21 at 15.59.29.png" alt="20 minute cycling distance" class="map-image">
+            <div class="legend">
+                <h4>Areas Covered</h4>
+                <p style="margin: 0; font-size: 0.9rem;">Camden, Hackney, Stoke Newington, Highbury, Dalston, Bethnal Green, Whitechapel, Bermondsey, Elephant & Castle, Waterloo, Westminster, Bloomsbury, King's Cross</p>
+            </div>
+        </div>
+        
+        <!-- Transit Panel -->
+        <div class="map-panel" id="panel-transit">
+            <div class="map-info">
+                <div class="map-info-icon">🚇</div>
+                <div class="map-info-text">
+                    <h3>20 Minute Public Transport</h3>
+                    <p>Tube and bus routes extend your reach, but follow fixed corridors.</p>
+                </div>
+            </div>
+            <img src="images/Screenshot 2026-01-21 at 15.59.53.png" alt="20 minute public transport distance" class="map-image">
+            <div class="legend">
+                <h4>Areas Covered</h4>
+                <p style="margin: 0; font-size: 0.9rem;">Wood Green, Tottenham, Clapton, Hackney, Mile End, Limehouse, Bermondsey, Peckham, Brixton, Oval, plus areas along Northern/Victoria line corridors</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-note">
+        <p>Maps generated using isochrone travel time analysis. Actual travel times may vary based on route, traffic, and conditions.</p>
+    </div>
+</div>
+</div>
+
+<script>
+    function showTab(mode) {
+        // Remove active from all tabs and panels
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.map-panel').forEach(p => p.classList.remove('active'));
+        
+        // Add active to selected
+        document.getElementById('tab-' + mode).classList.add('active');
+        document.getElementById('panel-' + mode).classList.add('active');
+    }
+</script>
+
+</body>
+</html>
