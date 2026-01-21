@@ -120,33 +120,69 @@
             box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
         }
         
-        /* Affordability Indicator */
-        .affordability-bar {
-            height: 8px;
-            background: linear-gradient(to right, var(--accent) 0%, var(--accent) 30%, var(--warning) 30%, var(--warning) 40%, var(--danger) 40%, var(--danger) 100%);
-            border-radius: 4px;
-            margin: 15px 0 10px;
+        /* Tooltip */
+        .tooltip {
             position: relative;
+            display: inline-block;
         }
         
-        .affordability-marker {
-            position: absolute;
-            top: -6px;
-            width: 20px;
-            height: 20px;
+        .tooltip-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
             background: var(--primary);
-            border: 3px solid white;
+            color: white;
             border-radius: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: left 0.3s ease;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: help;
         }
         
-        .affordability-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-muted);
+        .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            width: 280px;
+            font-size: 0.85rem;
+            font-weight: normal;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+        
+        .tooltip-content::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--primary);
+        }
+        
+        .tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        @media (max-width: 600px) {
+            .tooltip-content {
+                left: 0;
+                transform: translateX(0);
+            }
+            .tooltip-content::after {
+                left: 20px;
+            }
         }
         
         /* Status Boxes */
@@ -322,6 +358,28 @@
             margin: 10px 0;
         }
         
+        /* First-time buyer toggle */
+        .first-time-buyer-toggle {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+        
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .toggle-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
         /* Upfront Costs */
         .costs-grid {
             display: grid;
@@ -487,12 +545,12 @@
         <div class="input-grid">
             <div class="input-group">
                 <label for="monthlyIncome">Expected Monthly Income (after tax)</label>
-                <input type="number" id="monthlyIncome" value="4000" oninput="calculate()">
+                <input type="number" id="monthlyIncome" value="2800" oninput="calculate()">
                 <div class="hint">Your average monthly take-home as self-employed</div>
             </div>
             <div class="input-group">
                 <label for="annualIncome">Annual Income (for mortgage calc)</label>
-                <input type="number" id="annualIncome" value="55000" oninput="calculate()">
+                <input type="number" id="annualIncome" value="30000" oninput="calculate()">
                 <div class="hint">Average of last 2-3 years (before tax)</div>
             </div>
         </div>
@@ -518,26 +576,24 @@
         <div class="input-grid">
             <div class="input-group full-width">
                 <label for="maxBudget">Maximum you want to spend per month</label>
-                <input type="number" id="maxBudget" value="1500" oninput="calculate()">
+                <input type="number" id="maxBudget" value="850" oninput="calculate()">
                 <div class="hint">Total for mortgage + service charge + council tax + utilities</div>
             </div>
         </div>
         
         <!-- Affordability Indicator -->
-        <div style="margin-top: 25px;">
-            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-weight: 600;">Housing as % of Income</span>
-                <span id="affordabilityPercent" style="font-size: 1.2rem; font-weight: 700;">37.5%</span>
+                <div class="tooltip">
+                    <span class="tooltip-icon">?</span>
+                    <div class="tooltip-content">
+                        <strong>This is the most important question to ask yourself.</strong><br><br>
+                        A lower percentage means more financial flexibility for unexpected expenses, savings, and peace of mind. You should choose something you feel comfortable with.
+                    </div>
+                </div>
             </div>
-            <div class="affordability-bar">
-                <div class="affordability-marker" id="affordabilityMarker"></div>
-            </div>
-            <div class="affordability-labels">
-                <span>0%</span>
-                <span>30% (comfortable)</span>
-                <span>40% (stretched)</span>
-                <span>50%+</span>
-            </div>
+            <span id="affordabilityPercent" style="font-size: 1.5rem; font-weight: 700;">37.5%</span>
         </div>
         
         <div class="status-box" id="affordabilityStatus">
@@ -669,6 +725,14 @@
     <div class="card">
         <h2 class="card-title">Upfront Costs (No Service Charge Scenario)</h2>
         
+        <div class="first-time-buyer-toggle">
+            <label class="toggle-label">
+                <input type="checkbox" id="firstTimeBuyer" checked onchange="calculate()">
+                <span class="toggle-text">First-time buyer</span>
+            </label>
+            <div class="hint" id="ftbHint">No stamp duty up to £300,000, then 5% up to £500,000</div>
+        </div>
+        
         <div class="costs-grid">
             <div class="cost-item">
                 <div class="cost-item-label">Stamp Duty</div>
@@ -714,7 +778,7 @@
 
     <div class="footer-note">
         <p><strong>Note:</strong> This calculator provides estimates only. Self-employed mortgage applications typically require 2-3 years of accounts. Actual lending decisions depend on many factors including credit history, existing debts, and lender criteria.</p>
-        <p>Stamp duty calculated for additional property rates. First-time buyer relief may apply.</p>
+        <p>Stamp duty rates from April 2025. First-time buyer relief available on properties up to £500,000.</p>
     </div>
 </div>
 
@@ -745,10 +809,6 @@
         // === AFFORDABILITY CALCULATIONS ===
         const affordabilityPercent = monthlyIncome > 0 ? (maxBudget / monthlyIncome) * 100 : 0;
         document.getElementById('affordabilityPercent').textContent = affordabilityPercent.toFixed(1) + '%';
-        
-        // Position the marker (0-50% maps to 0-100% width)
-        const markerPosition = Math.min(Math.max(affordabilityPercent * 2, 0), 100);
-        document.getElementById('affordabilityMarker').style.left = markerPosition + '%';
         
         // Update affordability status
         const statusBox = document.getElementById('affordabilityStatus');
@@ -831,11 +891,27 @@
         const priceDiff = propertyPriceNoFees - propertyPriceWithFees;
         document.getElementById('priceDifference').textContent = formatNumber(priceDiff);
 
-        // === STAMP DUTY (additional property rates) ===
-        const stampDuty = calculateStampDuty(propertyPriceNoFees);
-        document.getElementById('stampDuty').textContent = formatCurrency(stampDuty);
+        // === STAMP DUTY ===
+        const isFirstTimeBuyer = document.getElementById('firstTimeBuyer').checked;
+        const stampDutyResult = calculateStampDuty(propertyPriceNoFees, isFirstTimeBuyer);
+        document.getElementById('stampDuty').textContent = formatCurrency(stampDutyResult.duty);
         
-        const totalUpfront = deposit + stampDuty + 2000 + 500;
+        // Update hint text based on FTB status
+        const ftbHint = document.getElementById('ftbHint');
+        if (isFirstTimeBuyer) {
+            if (propertyPriceNoFees > 500000) {
+                ftbHint.textContent = 'Property over £500,000 — first-time buyer relief does not apply';
+                ftbHint.style.color = '#e74c3c';
+            } else {
+                ftbHint.textContent = 'No stamp duty up to £300,000, then 5% up to £500,000';
+                ftbHint.style.color = '';
+            }
+        } else {
+            ftbHint.textContent = 'Standard rates: 0% up to £125,000, 2% to £250,000, then 5% to £925,000';
+            ftbHint.style.color = '';
+        }
+        
+        const totalUpfront = deposit + stampDutyResult.duty + 2000 + 500;
         document.getElementById('totalUpfront').textContent = formatCurrency(totalUpfront);
 
         // === LENDING CHECK ===
@@ -857,28 +933,44 @@
         }
     }
 
-    function calculateStampDuty(price) {
-        // Standard residential rates (not first-time buyer)
-        // Up to £250,000: 0%
-        // £250,001 to £925,000: 5%
-        // £925,001 to £1.5m: 10%
-        // Over £1.5m: 12%
-        
+    function calculateStampDuty(price, isFirstTimeBuyer) {
         let duty = 0;
+        let originalPrice = price;
         
-        if (price > 1500000) {
-            duty += (price - 1500000) * 0.12;
-            price = 1500000;
-        }
-        if (price > 925000) {
-            duty += (price - 925000) * 0.10;
-            price = 925000;
-        }
-        if (price > 250000) {
-            duty += (price - 250000) * 0.05;
+        if (isFirstTimeBuyer && price <= 500000) {
+            // First-time buyer relief (from April 2025)
+            // Only applies if property £500,000 or less
+            // Up to £300,000: 0%
+            // £300,001 to £500,000: 5%
+            if (price > 300000) {
+                duty = (price - 300000) * 0.05;
+            }
+        } else {
+            // Standard residential rates (from April 2025)
+            // Up to £125,000: 0%
+            // £125,001 to £250,000: 2%
+            // £250,001 to £925,000: 5%
+            // £925,001 to £1.5m: 10%
+            // Over £1.5m: 12%
+            
+            if (price > 1500000) {
+                duty += (price - 1500000) * 0.12;
+                price = 1500000;
+            }
+            if (price > 925000) {
+                duty += (price - 925000) * 0.10;
+                price = 925000;
+            }
+            if (price > 250000) {
+                duty += (price - 250000) * 0.05;
+                price = 250000;
+            }
+            if (price > 125000) {
+                duty += (price - 125000) * 0.02;
+            }
         }
         
-        return Math.floor(duty);
+        return { duty: Math.floor(duty), price: originalPrice };
     }
 
     function formatCurrency(num) {
